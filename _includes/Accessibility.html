@@ -1,0 +1,326 @@
+<!-- Accessibility Widget -->
+<div class="accessibility-widget">
+  <button class="accessibility-toggle" aria-label="Open accessibility options" title="Accessibility Options">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 2C13.1 2 14 2.9 14 4C14 5.1 13.1 6 12 6C10.9 6 10 5.1 10 4C10 2.9 10.9 2 12 2ZM21 9V7L15 7.5V9M15 10.5V19L13.5 18.5V10.5M10.5 10.5V18.5L9 19V10.5M9 7.5L3 7V9L9 8.5"/>
+    </svg>
+  </button>
+  
+  <div class="accessibility-menu" role="dialog" aria-labelledby="accessibility-title" aria-hidden="true">
+    <div class="accessibility-header">
+      <h3 id="accessibility-title">Accessibility Options</h3>
+      <button class="accessibility-close" aria-label="Close accessibility options">×</button>
+    </div>
+    
+    <div class="accessibility-content">
+      <!-- Text Size Controls -->
+      <div class="accessibility-section">
+        <h4>Text Size</h4>
+        <div class="accessibility-controls">
+          <button class="accessibility-btn" data-action="decrease-text" aria-label="Decrease text size">A-</button>
+          <button class="accessibility-btn" data-action="reset-text" aria-label="Reset text size">A</button>
+          <button class="accessibility-btn" data-action="increase-text" aria-label="Increase text size">A+</button>
+        </div>
+      </div>
+      
+      <!-- Contrast Controls -->
+      <div class="accessibility-section">
+        <h4>Contrast</h4>
+        <div class="accessibility-controls">
+          <button class="accessibility-btn toggle-btn" data-action="high-contrast" aria-pressed="false">
+            High Contrast
+          </button>
+          <button class="accessibility-btn toggle-btn" data-action="invert-colors" aria-pressed="false">
+            Invert Colors
+          </button>
+        </div>
+      </div>
+      
+      <!-- Reading Aids -->
+      <div class="accessibility-section">
+        <h4>Reading Aids</h4>
+        <div class="accessibility-controls">
+          <button class="accessibility-btn toggle-btn" data-action="reading-guide" aria-pressed="false">
+            Reading Guide
+          </button>
+          <button class="accessibility-btn toggle-btn" data-action="highlight-links" aria-pressed="false">
+            Highlight Links
+          </button>
+        </div>
+      </div>
+      
+      <!-- Navigation Aids -->
+      <div class="accessibility-section">
+        <h4>Navigation</h4>
+        <div class="accessibility-controls">
+          <button class="accessibility-btn toggle-btn" data-action="keyboard-navigation" aria-pressed="false">
+            Keyboard Navigation
+          </button>
+          <button class="accessibility-btn" data-action="skip-to-content">
+            Skip to Content
+          </button>
+        </div>
+      </div>
+      
+      <!-- Reset All -->
+      <div class="accessibility-section">
+        <button class="accessibility-btn reset-btn" data-action="reset-all">
+          Reset All Settings
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Reading Guide Element -->
+<div class="reading-guide" aria-hidden="true"></div>
+
+<script>
+class AccessibilityWidget {
+  constructor() {
+    this.settings = {
+      textSize: 100,
+      highContrast: false,
+      invertColors: false,
+      readingGuide: false,
+      highlightLinks: false,
+      keyboardNavigation: false
+    };
+    
+    this.init();
+    this.loadSettings();
+  }
+  
+  init() {
+    this.widget = document.querySelector('.accessibility-widget');
+    this.toggle = document.querySelector('.accessibility-toggle');
+    this.menu = document.querySelector('.accessibility-menu');
+    this.closeBtn = document.querySelector('.accessibility-close');
+    this.readingGuide = document.querySelector('.reading-guide');
+    
+    this.bindEvents();
+    this.createSkipLink();
+  }
+  
+  bindEvents() {
+    // Toggle menu
+    this.toggle.addEventListener('click', () => this.toggleMenu());
+    this.closeBtn.addEventListener('click', () => this.closeMenu());
+    
+    // Close on escape key
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && this.menu.getAttribute('aria-hidden') === 'false') {
+        this.closeMenu();
+      }
+    });
+    
+    // Close on outside click
+    document.addEventListener('click', (e) => {
+      if (!this.widget.contains(e.target) && this.menu.getAttribute('aria-hidden') === 'false') {
+        this.closeMenu();
+      }
+    });
+    
+    // Action buttons
+    this.menu.addEventListener('click', (e) => {
+      if (e.target.matches('[data-action]')) {
+        this.handleAction(e.target.dataset.action, e.target);
+      }
+    });
+    
+    // Reading guide
+    document.addEventListener('mousemove', (e) => {
+      if (this.settings.readingGuide) {
+        this.updateReadingGuide(e.clientY);
+      }
+    });
+  }
+  
+  createSkipLink() {
+    const skipLink = document.createElement('a');
+    skipLink.href = '#main-content';
+    skipLink.className = 'skip-link';
+    skipLink.textContent = 'Skip to main content';
+    skipLink.setAttribute('aria-label', 'Skip to main content');
+    document.body.insertBefore(skipLink, document.body.firstChild);
+  }
+  
+  toggleMenu() {
+    const isHidden = this.menu.getAttribute('aria-hidden') === 'true';
+    this.menu.setAttribute('aria-hidden', !isHidden);
+    this.toggle.setAttribute('aria-expanded', isHidden);
+    
+    if (isHidden) {
+      this.menu.querySelector('button').focus();
+    }
+  }
+  
+  closeMenu() {
+    this.menu.setAttribute('aria-hidden', 'true');
+    this.toggle.setAttribute('aria-expanded', 'false');
+    this.toggle.focus();
+  }
+  
+  handleAction(action, button) {
+    switch (action) {
+      case 'increase-text':
+        this.adjustTextSize(10);
+        break;
+      case 'decrease-text':
+        this.adjustTextSize(-10);
+        break;
+      case 'reset-text':
+        this.resetTextSize();
+        break;
+      case 'high-contrast':
+        this.toggleHighContrast(button);
+        break;
+      case 'invert-colors':
+        this.toggleInvertColors(button);
+        break;
+      case 'reading-guide':
+        this.toggleReadingGuide(button);
+        break;
+      case 'highlight-links':
+        this.toggleHighlightLinks(button);
+        break;
+      case 'keyboard-navigation':
+        this.toggleKeyboardNavigation(button);
+        break;
+      case 'skip-to-content':
+        this.skipToContent();
+        break;
+      case 'reset-all':
+        this.resetAll();
+        break;
+    }
+    
+    this.saveSettings();
+  }
+  
+  adjustTextSize(change) {
+    this.settings.textSize = Math.max(80, Math.min(150, this.settings.textSize + change));
+    document.documentElement.style.fontSize = `${this.settings.textSize}%`;
+  }
+  
+  resetTextSize() {
+    this.settings.textSize = 100;
+    document.documentElement.style.fontSize = '100%';
+  }
+  
+  toggleHighContrast(button) {
+    this.settings.highContrast = !this.settings.highContrast;
+    document.body.classList.toggle('high-contrast', this.settings.highContrast);
+    button.setAttribute('aria-pressed', this.settings.highContrast);
+  }
+  
+  toggleInvertColors(button) {
+    this.settings.invertColors = !this.settings.invertColors;
+    document.body.classList.toggle('invert-colors', this.settings.invertColors);
+    button.setAttribute('aria-pressed', this.settings.invertColors);
+  }
+  
+  toggleReadingGuide(button) {
+    this.settings.readingGuide = !this.settings.readingGuide;
+    this.readingGuide.style.display = this.settings.readingGuide ? 'block' : 'none';
+    button.setAttribute('aria-pressed', this.settings.readingGuide);
+  }
+  
+  toggleHighlightLinks(button) {
+    this.settings.highlightLinks = !this.settings.highlightLinks;
+    document.body.classList.toggle('highlight-links', this.settings.highlightLinks);
+    button.setAttribute('aria-pressed', this.settings.highlightLinks);
+  }
+  
+  toggleKeyboardNavigation(button) {
+    this.settings.keyboardNavigation = !this.settings.keyboardNavigation;
+    document.body.classList.toggle('keyboard-navigation', this.settings.keyboardNavigation);
+    button.setAttribute('aria-pressed', this.settings.keyboardNavigation);
+  }
+  
+  updateReadingGuide(y) {
+    this.readingGuide.style.top = `${y - 2}px`;
+  }
+  
+  skipToContent() {
+    const mainContent = document.getElementById('main-content') || document.querySelector('main') || document.querySelector('.container');
+    if (mainContent) {
+      mainContent.focus();
+      mainContent.scrollIntoView({ behavior: 'smooth' });
+    }
+    this.closeMenu();
+  }
+  
+  resetAll() {
+    this.settings = {
+      textSize: 100,
+      highContrast: false,
+      invertColors: false,
+      readingGuide: false,
+      highlightLinks: false,
+      keyboardNavigation: false
+    };
+    
+    // Reset DOM
+    document.documentElement.style.fontSize = '100%';
+    document.body.classList.remove('high-contrast', 'invert-colors', 'highlight-links', 'keyboard-navigation');
+    this.readingGuide.style.display = 'none';
+    
+    // Reset button states
+    this.menu.querySelectorAll('.toggle-btn').forEach(btn => {
+      btn.setAttribute('aria-pressed', 'false');
+    });
+    
+    this.saveSettings();
+  }
+  
+  saveSettings() {
+    localStorage.setItem('accessibility-settings', JSON.stringify(this.settings));
+  }
+  
+  loadSettings() {
+    const saved = localStorage.getItem('accessibility-settings');
+    if (saved) {
+      this.settings = { ...this.settings, ...JSON.parse(saved) };
+      this.applySettings();
+    }
+  }
+  
+  applySettings() {
+    // Apply text size
+    if (this.settings.textSize !== 100) {
+      document.documentElement.style.fontSize = `${this.settings.textSize}%`;
+    }
+    
+    // Apply toggles
+    const toggles = {
+      'high-contrast': this.settings.highContrast,
+      'invert-colors': this.settings.invertColors,
+      'highlight-links': this.settings.highlightLinks,
+      'keyboard-navigation': this.settings.keyboardNavigation
+    };
+    
+    Object.entries(toggles).forEach(([className, enabled]) => {
+      document.body.classList.toggle(className, enabled);
+    });
+    
+    // Apply reading guide
+    if (this.settings.readingGuide) {
+      this.readingGuide.style.display = 'block';
+    }
+    
+    // Update button states
+    Object.entries(this.settings).forEach(([key, value]) => {
+      const button = this.menu.querySelector(`[data-action="${key.replace(/([A-Z])/g, '-$1').toLowerCase()}"]`);
+      if (button && button.classList.contains('toggle-btn')) {
+        button.setAttribute('aria-pressed', value);
+      }
+    });
+  }
+}
+
+// Initialize when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+  new AccessibilityWidget();
+});
+</script>

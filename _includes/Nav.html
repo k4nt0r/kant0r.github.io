@@ -1,0 +1,75 @@
+<nav class="nav">
+  <div class="nav-left">
+    <a href="{{ site.baseurl }}/">
+      <img class="nav-logo" src="{{ site.baseurl }}/assets/img/logo.png" alt="Logo">
+    </a>
+  </div>
+  
+  <div class="nav-right">
+    <div class="dropdown">
+      <div class="hamburger">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M3 6H21M3 12H21M3 18H21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div class="dropdown-menu">
+        {%- if site.menu -%}
+          {%- for item in site.menu -%}
+            <a href="{{ site.baseurl }}{{ item.url }}">{{ item.title }}</a>
+          {%- endfor -%}
+        {%- else -%}
+          <a href="{{ site.baseurl }}/">About</a>
+          <a href="{{ site.baseurl }}/notes">Notes</a>
+          <a href="{{ site.baseurl }}/about">About</a>
+        {%- endif -%}
+      </div>
+    </div>
+  </div>
+</nav>
+
+<script>
+  const hamburger = document.querySelector('.hamburger');
+  const dropdown = document.querySelector('.dropdown');
+  
+  hamburger.addEventListener('click', function(e) {
+    e.stopPropagation();
+    this.classList.toggle('active');
+    dropdown.classList.toggle('active');
+  });
+  
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.dropdown')) {
+      hamburger.classList.remove('active');
+      dropdown.classList.remove('active');
+    }
+  });
+  
+  // Navigation search functionality
+  const navSearchInput = document.getElementById('nav-search-input');
+  const navSearchResults = document.getElementById('nav-search-results');
+  
+  if (navSearchInput && navSearchResults) {
+    navSearchInput.addEventListener('input', function() {
+      const query = this.value.trim();
+      if (query.length > 0) {
+        // Trigger search (this will be connected to the main search functionality)
+        performNavSearch(query);
+      } else {
+        navSearchResults.classList.remove('active');
+      }
+    });
+    
+    // Hide search results when clicking outside
+    document.addEventListener('click', function(e) {
+      if (!e.target.closest('.nav-search-container')) {
+        navSearchResults.classList.remove('active');
+      }
+    });
+  }
+  
+  // Placeholder search function - will be enhanced when main search is integrated
+  function performNavSearch(query) {
+    // This will be connected to the main search functionality
+    console.log('Searching for:', query);
+  }
+</script>

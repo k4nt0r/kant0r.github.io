@@ -1,0 +1,42 @@
+<div class="footer">
+  <div class="footer-left">
+    <h6>
+      {%- if site.footer.copyright and site.footer.copyright != "" -%}
+        {{ site.footer.copyright }}
+        {%- if site.footer.credits.enabled -%}
+          • <a href="{{ site.baseurl }}{{ site.footer.credits.url }}">{{ site.footer.credits.text }}</a>
+        {%- endif -%}
+      {%- elsif site.footer.credits.enabled -%}
+        <a href="{{ site.baseurl }}{{ site.footer.credits.url }}">{{ site.footer.credits.text }}</a>
+      {%- endif -%}
+    </h6>
+  </div>
+  <div class="footer-right">
+  <button class="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode">
+    <svg class="theme-icon" viewBox="0 0 24 24" fill="currentColor" width="20" height="20" aria-hidden="true">
+      <path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10zm0-2V4c4.418 0 8 3.582 8 8s-3.582 8-8 8z"/>
+    </svg>
+  </button>
+</div>
+
+<script>
+  // Theme toggle
+  const themeToggle = document.querySelector('.theme-toggle');
+  const root = document.documentElement;
+  
+  function setTheme(theme) {
+    root.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }
+  
+  // Initial theme
+  const savedTheme = localStorage.getItem('theme');
+  if (savedTheme) {
+    setTheme(savedTheme);
+  }
+  
+  themeToggle.addEventListener('click', function() {
+    const isDark = root.getAttribute('data-theme') === 'dark';
+    setTheme(isDark ? 'light' : 'dark');
+  });
+</script>
